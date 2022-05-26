@@ -5,10 +5,10 @@ using StoreApi.Models;
 
 namespace StoreApi.Repositories
 {
-    public class CustomerRepository : ICustomerRepository
+    public class CustomersRepository : ICustomersRepository
     {
         private StoreDbContext _context;
-        public CustomerRepository(StoreDbContext context)
+        public CustomersRepository(StoreDbContext context)
         {
             _context = context;
         }

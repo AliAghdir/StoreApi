@@ -2,7 +2,7 @@ using StoreApi.Models;
 
 namespace StoreApi.Contracts
 {
-   public interface ICustomerRepository
+   public interface ICustomersRepository
    {
        IEnumerable<Customer> GetAll();
        Task<int> GetCountCustomer();
