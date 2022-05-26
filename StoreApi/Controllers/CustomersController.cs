@@ -10,8 +10,8 @@ namespace StoreApi.Controllers
     [ApiController]
     public class CustomersController : Controller
     {
-        private ICustomerRepository _customerRepository;
-        public CustomersController(ICustomerRepository customerRepository)
+        private ICustomersRepository _customerRepository;
+        public CustomersController(ICustomersRepository customerRepository)
         {
             _customerRepository = customerRepository;
         }
@@ -23,7 +23,7 @@ namespace StoreApi.Controllers
             {
                 StatusCode = (int) HttpStatusCode.OK
             };
-            Request.HttpContext.Response.Headers.Add("CustomerCount",_customerRepository.GetCountCustomer().ToString());
+            //Request.HttpContext.Response.Headers.Add("CustomerCount",_customerRepository.GetCountCustomer().ToString());
             return result;
         }
 
