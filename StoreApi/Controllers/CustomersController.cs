@@ -29,13 +29,27 @@ namespace StoreApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCustomer([FromRoute] int id)
         {
-            var customer= await _context.Customers.SingleOrDefaultAsync(c=>c.CustomerId==id);
-            return Ok(customer);
+            if (CustomerExists(id))
+            {
+                var customer = await _context.Customers.SingleOrDefaultAsync(c => c.CustomerId == id);
+                return Ok(customer);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
+
+        private bool CustomerExists(int id)=>_context.Customers.Any(c=>c.CustomerId==id);
 
         [HttpPost]
         public async Task<IActionResult> PostCustomer([FromBody] Customer customer)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _context.Add(customer);
             await _context.SaveChangesAsync();
             return CreatedAtAction("GetCustomer", new {id = customer.CustomerId}, customer);
