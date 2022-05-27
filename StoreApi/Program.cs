@@ -20,6 +20,9 @@ builder.Services.AddDbContext<StoreDbContext>(options =>
     builder.Services.AddTransient<ISalesPeopleRepository, SalesPeopleRepository>();
 #endregion
 
+builder.Services.AddResponseCaching();
+builder.Services.AddMemoryCache();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +35,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseResponseCaching();
 
 app.MapControllers();
 
