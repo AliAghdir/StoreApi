@@ -19,6 +19,7 @@ namespace StoreApi.Controllers
 
         // GET: api/Products
         [HttpGet]
+        [ResponseCache(Duration = 60)]
         public IEnumerable<Product> GetProducts()
         {
             return _productsRepository.GetAll();
