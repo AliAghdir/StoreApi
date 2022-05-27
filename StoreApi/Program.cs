@@ -15,7 +15,9 @@ builder.Services.AddDbContext<StoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("StoreApiDb")));
 
 #region Repository
-    builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+    builder.Services.AddTransient<ICustomersRepository, CustomersRepository>();
+    builder.Services.AddTransient<IProductsRepository, ProductsRepository>();
+    builder.Services.AddTransient<ISalesPeopleRepository, SalesPeopleRepository>();
 #endregion
 
 var app = builder.Build();
