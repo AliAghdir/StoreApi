@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using StoreApi.Contracts;
 using StoreApi.Models;
 
@@ -8,9 +9,12 @@ namespace StoreApi.Repositories
     public class CustomersRepository : ICustomersRepository
     {
         private StoreDbContext _context;
-        public CustomersRepository(StoreDbContext context)
+        private IMemoryCache _cache;
+
+        public CustomersRepository(StoreDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public async Task<Customer> Add(Customer customer)
@@ -22,9 +26,19 @@ namespace StoreApi.Repositories
 
         public async Task<Customer> Find(int id)
         {
-            return await _context.Customers
-            .Include(c => c.Orders)
-            .SingleOrDefaultAsync(c => c.CustomerId == id);
+            var cacheCustomer = _cache.Get<Customer>(id);
+            if (cacheCustomer != null)
+            {
+                return cacheCustomer;
+            }
+            else
+            {
+                var customer = await _context.Customers.Include(c => c.Orders).SingleOrDefaultAsync(c => c.CustomerId == id);
+                var cacheOption = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                _cache.Set(customer.CustomerId, customer, cacheOption);
+                return customer;
+            }
         }
 
         public IEnumerable<Customer> GetAll()=>

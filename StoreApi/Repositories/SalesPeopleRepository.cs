@@ -1,16 +1,19 @@
 ﻿using StoreApi.Contracts;
 using StoreApi.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace StoreApi.Repositories
 {
     public class SalesPeopleRepository : ISalesPeopleRepository
     {
         private StoreDbContext _context;
+        private IMemoryCache _cache;
 
-        public SalesPeopleRepository(StoreDbContext context)
+        public SalesPeopleRepository(StoreDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public IEnumerable<SalesPerson> GetAll()
@@ -27,8 +30,19 @@ namespace StoreApi.Repositories
 
         public async Task<SalesPerson> Find(int id)
         {
-            return await _context.SalesPeople.SingleOrDefaultAsync(s => s.SalesPersonId == id);
-
+            var cacheSalesPerson = _cache.Get<SalesPerson>(id);
+            if (cacheSalesPerson != null)
+            {
+                return cacheSalesPerson;
+            }
+            else
+            {
+                var salesPerson = await _context.SalesPeople.SingleOrDefaultAsync(c => c.SalesPersonId == id);
+                var cacheOption = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                _cache.Set(salesPerson.SalesPersonId, salesPerson, cacheOption);
+                return salesPerson;
+            }
         }
 
         public async Task<SalesPerson> Update(SalesPerson sales)

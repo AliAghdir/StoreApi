@@ -1,16 +1,19 @@
 ﻿using StoreApi.Contracts;
 using Microsoft.EntityFrameworkCore;
 using StoreApi.Models;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace StoreApi.Repositories
 {
     public class ProductsRepository:IProductsRepository
     {
         private StoreDbContext _context;
+        private IMemoryCache _cache;
 
-        public ProductsRepository(StoreDbContext context)
+        public ProductsRepository(StoreDbContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         public IEnumerable<Product> GetAll()
@@ -27,8 +30,19 @@ namespace StoreApi.Repositories
 
         public async Task<Product> Find(int id)
         {
-            return await _context.Products.SingleOrDefaultAsync(c => c.ProductId == id);
-
+            var cacheProduct = _cache.Get<Product>(id);
+            if (cacheProduct != null)
+            {
+                return cacheProduct;
+            }
+            else
+            {
+                var product = await _context.Products.SingleOrDefaultAsync(c => c.ProductId == id);
+                var cacheOption = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(60));
+                _cache.Set(product.ProductId, product, cacheOption);
+                return product;
+            }
         }
 
         public async Task<Product> Update(Product product)
